@@ -76,6 +76,11 @@ body {
     cursor: pointer;
 }
 
+.error{
+    color: red;
+    font-size: small;
+}
+
 .remember{
     font-size: small;
     margin: auto;

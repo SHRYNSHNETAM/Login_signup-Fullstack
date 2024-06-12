@@ -1,9 +1,10 @@
 import '../pagecss/signup.css';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import { AiOutlineEye,AiOutlineEyeInvisible } from "react-icons/ai";
 
 function Signup() {
+  const navigate = useNavigate();
   const [myName,setmyName] = useState("");
   const [myEmail,setmyEmail] = useState("");
   const [myPass,setmyPass] = useState("");
@@ -14,6 +15,8 @@ function Signup() {
   const [invisible,setinvisible] = useState("eye");
   const [visible1,setvisible1] = useState("hide");
   const [invisible1,setinvisible1] = useState("eye");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [checked, setchecked] = useState("");
 
   const handleNameChange = (e) => {
     setmyName(e.target.value);
@@ -30,14 +33,79 @@ function Signup() {
     setmyPass1(e.target.value);
   }
 
+  function handlePassword() {
+    let checkPass=false;
+    let new_pass = myPass;
+    let new_pass1 = myPass1;
+
+    if(new_pass!==new_pass1)
+
+    var lowerCase = /[a-z]/g;
+    var upperCase = /[A-Z]/g;
+    var numbers = /[0-9]/g;
+    if(new_pass==="" || new_pass1===""){
+      setErrorMessage("Password cannot be Empty!");
+    }
+    else if(new_pass!==new_pass1){
+      setErrorMessage("Password and Confirm Password should be same!");
+    }
+    else if (!new_pass.match(lowerCase)) {
+       setErrorMessage("Password should contains lowercase letters!");
+    } else if (!new_pass.match(upperCase)) {
+       setErrorMessage("Password should contain uppercase letters!");
+    } else if (!new_pass.match(numbers)) {
+       setErrorMessage("Password should contains numbers also!");
+    } else if (new_pass.length < 10) {
+       setErrorMessage("Password length should be more than 10.");
+    } else {
+        checkPass=true;
+       setErrorMessage("");
+    }
+    return checkPass;
+  }  
+
+  function isValidEmail(email) {
+    // Define a regular expression pattern for email validation.
+    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let check = pattern.test(email);
+    return check;
+  }
+
   const handleSubmit = (e) => {
-    let checkName = true, checkEmail=true, checkPass=true, checkPass1=true;
-    
-    if(checkName && checkEmail && checkPass && checkPass1){
+    let checkName = true, checkcheckBox=true;
+
+    let tempmail = myEmail;
+    let checkEmail=isValidEmail(tempmail);
+
+    let checkPass = handlePassword();
+
+    if(myName===""){
+      checkName=false;
+      setErrorMessage("Name cannot be Empty!")}
+    else if(myEmail===""){
+      checkEmail=false;
+      setErrorMessage("Email cannot be Empty!")
+    }
+    else if(checked===""){
+      checkcheckBox=false;
+      setErrorMessage("Please accept all the terms & conditions")
+    }
+    else if(checkEmail===false){
+      setErrorMessage("Please Enter a valid Email")
+    }
+    if(checkName && checkEmail && checkPass && checkcheckBox){
+      localStorage.setItem(`${myEmail}`,JSON.stringify({"Name":`${myName}`, "Email":`${myEmail}`, "Pass":`${myPass}`}));
       setmyName("");
       setmyEmail("");
       setmyPass("");
       setmyPass1("");
+      setchecked("");
+      setErrorMessage("");
+      setinvisible("eye");
+      setinvisible1("eye");
+      setvisible("hide");
+      setvisible1("hide");
+      navigate("/login");
     }
     e.preventDefault();
   }
@@ -65,6 +133,15 @@ function Signup() {
       setshowPass1("password");
       setinvisible1("eye");
       setvisible1("hide");
+    }
+  }
+
+  const handleCheck = () => {
+    if(checked==="checked"){
+      setchecked("");
+    }
+    else{
+      setchecked("checked");
     }
   }
 
@@ -98,8 +175,9 @@ function Signup() {
           <AiOutlineEye className={visible1} onClick={handleToggle1} />
           <AiOutlineEyeInvisible className={invisible1}  onClick={handleToggle1} />
         </div>
+        <p className="error">{errorMessage}</p>
         <div className="remember">
-          <input type="checkbox" name="myCheckbox" />
+          <input defaultChecked={checked} type="checkbox" name="myCheckbox" onChange={handleCheck} />
           <p className="me">I accept all Terms & Conditions</p>
         </div>
         <button className="mySubmit" type="submit" onClick={handleSubmit}>

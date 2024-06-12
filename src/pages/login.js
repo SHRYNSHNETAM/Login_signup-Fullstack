@@ -1,15 +1,16 @@
 import '../pagecss/login.css';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import { AiOutlineEye,AiOutlineEyeInvisible } from "react-icons/ai";
 
 function Login(){
+    const navigate = useNavigate();
     const [myEmail,setmyEmail] = useState("");
     const [myPass,setmyPass] = useState("");
     const [showPass,setshowPass] = useState("password");
     const [visible,setvisible] = useState("hide");
     const [invisible,setinvisible] = useState("eye");
-  
+    const [errorMessage, setErrorMessage] = useState("");
   
     const handleEmailChange = (e) => {
       setmyEmail(e.target.value);
@@ -19,11 +20,46 @@ function Login(){
       setmyPass(e.target.value);
     }
   
+    function isValidEmail(email) {
+      // Define a regular expression pattern for email validation.
+      const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      let check = pattern.test(email);
+      return check;
+    }
+
     const handleSubmit = (e) => {
-      console.log(`Email: ${myEmail}, Password: ${myPass}`);
-      setmyEmail("");
-      setmyPass("");
       e.preventDefault();
+      
+      let checkEmail=isValidEmail(myEmail);
+
+      if(myEmail===""){
+        checkEmail=false;
+        setErrorMessage("Email cannot be Empty!");
+      }
+      else if(checkEmail===false){
+        setErrorMessage("Please Enter a valid Email");
+      }
+      else if(myPass===""){
+        setErrorMessage("Please Enter a Password!");
+      }
+
+      let retrievedvalue = JSON.parse(localStorage.getItem(`${myEmail}`));
+      let matchdetails = true;
+
+      if(retrievedvalue===null){
+        matchdetails=false;
+        setErrorMessage("User not found")
+      }
+      else if(retrievedvalue.Pass!==myPass){
+        matchdetails=false;
+        setErrorMessage("Password is incorrect. Please Check!")
+      }
+      if(checkEmail && matchdetails){
+        setmyEmail("");
+        setmyPass("");
+        setErrorMessage("");
+        navigate("/", { state: { name: retrievedvalue.Name } });
+      }
     }
   
     const handleToggle = () => {
@@ -56,6 +92,7 @@ return(
               <AiOutlineEye className={visible} onClick={handleToggle} />
               <AiOutlineEyeInvisible className={invisible}  onClick={handleToggle} />
             </div>
+            <p className="error">{errorMessage}</p>
             <div className="remember">
               <input type="checkbox" name="myCheckbox" />
               <p className="me">Remember Me</p>
