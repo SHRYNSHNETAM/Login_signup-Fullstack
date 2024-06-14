@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "Name": "Hello",
+    "Email": "Hello@gmail.com",
+    "Pass": "Hello@2000"
+  },
+  {
+    "Name": "Shreyansh Netam ",
+    "Email": "netams2000@gmail.com",
+    "Pass": "Gmailpass@2K"
+  }
+]

@@ -44,17 +44,13 @@ function Login(){
       return response.text(); 
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
 
       const userdata = {
               "Email": myEmail,
               "Pass": myPass
             };
-
-      getData("http://127.0.0.1:8080", userdata).then((data) => {
-        console.log(data); // JSON data parsed by `data.json()` call
-      });
       
       let checkEmail=isValidEmail(myEmail);
 
@@ -69,22 +65,28 @@ function Login(){
         setErrorMessage("Please Enter a Password!");
       }
 
-      let retrievedvalue = JSON.parse(localStorage.getItem(`${myEmail}`));
-      let matchdetails = true;
-
-      if(retrievedvalue===null){
-        matchdetails=false;
-        setErrorMessage("User not found")
-      }
-      else if(retrievedvalue.Pass!==myPass){
-        matchdetails=false;
-        setErrorMessage("Password is incorrect. Please Check!")
-      }
-      if(checkEmail && matchdetails){
-        setmyEmail("");
-        setmyPass("");
-        setErrorMessage("");
-        navigate("/", { state: { name: retrievedvalue.Name } });
+      try {
+        const retrievedvalue = await getData("http://127.0.0.1:8080/login", userdata);
+    
+        let matchdetails = true;
+    
+        if (retrievedvalue==='User') {
+          matchdetails = false;
+          setErrorMessage("User not found");
+        } else if (retrievedvalue==='Wrong') {
+          matchdetails = false;
+          setErrorMessage("Password is incorrect. Please Check!");
+        }
+    
+        if (checkEmail && matchdetails) {
+          setmyEmail("");
+          setmyPass("");
+          setErrorMessage("");
+          navigate("/", { state: { name: retrievedvalue } });
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        setErrorMessage("An error occurred while trying to log in");
       }
     }
   

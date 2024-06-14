@@ -88,12 +88,11 @@ function Signup() {
     return response.text(); 
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let checkName = true, checkcheckBox=true;
 
-    let tempmail = myEmail;
-    let checkEmail=isValidEmail(tempmail);
+    let checkEmail=isValidEmail(myEmail);
 
     let checkPass = handlePassword();
 
@@ -112,29 +111,44 @@ function Signup() {
       setErrorMessage("Please Enter a valid Email")
     }
 
-    if(checkName && checkEmail && checkPass && checkcheckBox){
-      
-      const userdata = {
-                        "Name": myName,
-                        "Email": myEmail,
-                        "Pass": myPass
-                      };
+    const userdata = {
+      "Name": myName,
+      "Email": myEmail,
+      "Pass": myPass
+    };
+    let unpresent=true;
+    try{
+      const retrieved = await postData("http://127.0.0.1:8080/signup", userdata);
 
-      postData("http://127.0.0.1:8080", userdata).then((data) => {
-        console.log(data); // JSON data parsed by `data.json()` call
-      });
+      if(retrieved==='Success'){
+        unpresent=true;
+      }
+      else if(retrieved==='Conflict'){
+        unpresent=false;
+        setErrorMessage("User already exists for this email!")
+      }
+      else{
+        unpresent=false;
+        setErrorMessage("Unknown error found")
+      }
 
-      // setmyName("");
-      // setmyEmail("");
-      // setmyPass("");
-      // setmyPass1("");
-      // setchecked("");
-      // setErrorMessage("");
-      // setinvisible("eye");
-      // setinvisible1("eye");
-      // setvisible("hide");
-      // setvisible1("hide");
-      // navigate("/login");
+      if(checkName && checkEmail && checkPass && checkcheckBox && unpresent){
+        setmyName("");
+        setmyEmail("");
+        setmyPass("");
+        setmyPass1("");
+        setchecked("");
+        setErrorMessage("");
+        setinvisible("eye");
+        setinvisible1("eye");
+        setvisible("hide");
+        setvisible1("hide");
+        navigate("/login");
+      }
+
+    }catch(error){
+      console.error('Error:', error);
+      setErrorMessage("An error occurred while trying to log in");
     }
   }
 
