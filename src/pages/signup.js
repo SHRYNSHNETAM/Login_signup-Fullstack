@@ -71,7 +71,25 @@ function Signup() {
     return check;
   }
 
+  async function postData(url = "", data = {}) {
+    // Default options are marked with *
+    const response = await fetch(url, {
+      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      mode: "cors", // no-cors, *cors, same-origin
+      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: "same-origin", // include, *same-origin, omit
+      headers: {
+        "Content-Type": "application/json",
+      },
+      redirect: "follow", // manual, *follow, error
+      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
+    });
+    return response.text(); 
+  }
+
   const handleSubmit = (e) => {
+    e.preventDefault();
     let checkName = true, checkcheckBox=true;
 
     let tempmail = myEmail;
@@ -93,21 +111,31 @@ function Signup() {
     else if(checkEmail===false){
       setErrorMessage("Please Enter a valid Email")
     }
+
     if(checkName && checkEmail && checkPass && checkcheckBox){
-      localStorage.setItem(`${myEmail}`,JSON.stringify({"Name":`${myName}`, "Email":`${myEmail}`, "Pass":`${myPass}`}));
-      setmyName("");
-      setmyEmail("");
-      setmyPass("");
-      setmyPass1("");
-      setchecked("");
-      setErrorMessage("");
-      setinvisible("eye");
-      setinvisible1("eye");
-      setvisible("hide");
-      setvisible1("hide");
-      navigate("/login");
+      
+      const userdata = {
+                        "Name": myName,
+                        "Email": myEmail,
+                        "Pass": myPass
+                      };
+
+      postData("http://127.0.0.1:8080", userdata).then((data) => {
+        console.log(data); // JSON data parsed by `data.json()` call
+      });
+
+      // setmyName("");
+      // setmyEmail("");
+      // setmyPass("");
+      // setmyPass1("");
+      // setchecked("");
+      // setErrorMessage("");
+      // setinvisible("eye");
+      // setinvisible1("eye");
+      // setvisible("hide");
+      // setvisible1("hide");
+      // navigate("/login");
     }
-    e.preventDefault();
   }
 
   const handleToggle = () => {
@@ -147,7 +175,7 @@ function Signup() {
 
   return(
     <>
-      <form className="login">
+      <form className="login" onSubmit={handleSubmit}>
         <h1>SignUp</h1>
         <input className="myEmail" value={myName} onChange={handleNameChange} type="text" placeholder="Enter your Name"/>
         <input className="myEmail" value={myEmail} onChange={handleEmailChange} type="text" placeholder="Enter your Email"/>
