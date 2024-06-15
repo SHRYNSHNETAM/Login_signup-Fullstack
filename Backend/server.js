@@ -1,8 +1,8 @@
 const { createServer } = require('http');
 const url = require('url');
-const fs = require('fs');
 const handleSignup = require('./Routes/signup');
 const handleLogin = require('./Routes/login');
+const handleDelete = require('./Routes/delete');
 
 const hostname = '127.0.0.1';
 const port = '8080';
@@ -21,6 +21,9 @@ const server = createServer((req, res) => {
     } 
     else if(req.method === 'POST' && req.url==='/login'){
         handleLogin(req,res);
+    }
+    else if(req.method === 'POST' && req.url==='/delete'){
+        handleDelete(req,res);
     } 
     else {
         res.writeHead(405, { 'Content-Type': 'text/plain' });

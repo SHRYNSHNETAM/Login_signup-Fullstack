@@ -11,6 +11,7 @@ function Login(){
     const [visible,setvisible] = useState("hide");
     const [invisible,setinvisible] = useState("eye");
     const [errorMessage, setErrorMessage] = useState("");
+    const [checked,setChecked] = useState("")
   
     const handleEmailChange = (e) => {
       setmyEmail(e.target.value);
@@ -18,6 +19,10 @@ function Login(){
   
     const handlePassChange = (e) => {
       setmyPass(e.target.value);
+    }
+
+    const handleCheck = (e) => {
+      setChecked("checked");
     }
   
     function isValidEmail(email) {
@@ -41,16 +46,13 @@ function Login(){
         referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
         body: JSON.stringify(data), // body data type must match "Content-Type" header
       });
-      return response.text(); 
+      return response.json(); 
     }
 
     const handleSubmit = async (e) => {
       e.preventDefault();
 
-      const userdata = {
-              "Email": myEmail,
-              "Pass": myPass
-            };
+      const userdata = { "Email": myEmail, "Pass": myPass };
       
       let checkEmail=isValidEmail(myEmail);
 
@@ -64,29 +66,32 @@ function Login(){
       else if(myPass===""){
         setErrorMessage("Please Enter a Password!");
       }
+      else{
+        try {
+          const retrievedvalue = await getData("http://127.0.0.1:8080/login", userdata);
 
-      try {
-        const retrievedvalue = await getData("http://127.0.0.1:8080/login", userdata);
-    
-        let matchdetails = true;
-    
-        if (retrievedvalue==='User') {
-          matchdetails = false;
-          setErrorMessage("User not found");
-        } else if (retrievedvalue==='Wrong') {
-          matchdetails = false;
-          setErrorMessage("Password is incorrect. Please Check!");
+          let matchdetails = true;
+      
+          if (retrievedvalue.error === 'User_not_found') {
+            matchdetails = false;
+            setErrorMessage("User not found");
+          } else if (retrievedvalue.error === 'Wrong Password') {
+            matchdetails = false;
+            setErrorMessage("Password is incorrect. Please Check!");
+          }
+      
+          if (checkEmail && matchdetails){
+            if(checked==="checked") localStorage.setItem('Users', JSON.stringify(retrievedvalue));
+            setmyEmail("");
+            setmyPass("");
+            setErrorMessage("");
+            setChecked("");
+            navigate("/", { state: retrievedvalue });
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          setErrorMessage("An error occurred while trying to log in");
         }
-    
-        if (checkEmail && matchdetails) {
-          setmyEmail("");
-          setmyPass("");
-          setErrorMessage("");
-          navigate("/", { state: { name: retrievedvalue } });
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        setErrorMessage("An error occurred while trying to log in");
       }
     }
   
@@ -122,7 +127,7 @@ return(
             </div>
             <p className="error">{errorMessage}</p>
             <div className="remember">
-              <input type="checkbox" name="myCheckbox" />
+              <input type="checkbox" name="myCheckbox" defaultChecked={checked} onChange={handleCheck} />
               <p className="me">Remember Me</p>
               <p style={{
                 color: "blue",

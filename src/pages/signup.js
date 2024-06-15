@@ -85,14 +85,16 @@ function Signup() {
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       body: JSON.stringify(data), // body data type must match "Content-Type" header
     });
-    return response.text(); 
+    return response.json(); 
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const userdata = { "Name": myName, "Email": myEmail, "Pass": myPass };
+
     let checkName = true, checkcheckBox=true;
 
-    let checkEmail=isValidEmail(myEmail);
+    let checkEmail=isValidEmail(userdata.Email);
 
     let checkPass = handlePassword();
 
@@ -110,45 +112,41 @@ function Signup() {
     else if(checkEmail===false){
       setErrorMessage("Please Enter a valid Email")
     }
+    else{
+      let unpresent=true;
+      try{
+        const retrieved = await postData("http://127.0.0.1:8080/signup", userdata);
 
-    const userdata = {
-      "Name": myName,
-      "Email": myEmail,
-      "Pass": myPass
-    };
-    let unpresent=true;
-    try{
-      const retrieved = await postData("http://127.0.0.1:8080/signup", userdata);
+        if(retrieved.error==='Success'){
+          unpresent=true;
+        }
+        else if(retrieved.error==='Conflict'){
+          unpresent=false;
+          setErrorMessage("User already exists for this email!")
+        }
+        else{
+          unpresent=false;
+          setErrorMessage("Unknown error found")
+        }
 
-      if(retrieved==='Success'){
-        unpresent=true;
-      }
-      else if(retrieved==='Conflict'){
-        unpresent=false;
-        setErrorMessage("User already exists for this email!")
-      }
-      else{
-        unpresent=false;
-        setErrorMessage("Unknown error found")
-      }
+        if(checkName && checkEmail && checkPass && checkcheckBox && unpresent){
+          setmyName("");
+          setmyEmail("");
+          setmyPass("");
+          setmyPass1("");
+          setchecked("");
+          setErrorMessage("");
+          setinvisible("eye");
+          setinvisible1("eye");
+          setvisible("hide");
+          setvisible1("hide");
+          navigate("/login");
+        }
 
-      if(checkName && checkEmail && checkPass && checkcheckBox && unpresent){
-        setmyName("");
-        setmyEmail("");
-        setmyPass("");
-        setmyPass1("");
-        setchecked("");
-        setErrorMessage("");
-        setinvisible("eye");
-        setinvisible1("eye");
-        setvisible("hide");
-        setvisible1("hide");
-        navigate("/login");
+      }catch(error){
+        console.error('Error:', error);
+        setErrorMessage("An error occurred while trying to log in");
       }
-
-    }catch(error){
-      console.error('Error:', error);
-      setErrorMessage("An error occurred while trying to log in");
     }
   }
 

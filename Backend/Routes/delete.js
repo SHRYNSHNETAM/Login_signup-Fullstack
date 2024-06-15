@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-function handleSignup(req,res){
+function handleDelete(req,res){
     let body = '';
         req.on('data', chunk => {
             body += chunk.toString(); // convert Buffer to string
@@ -10,10 +10,8 @@ function handleSignup(req,res){
             const receivedData = JSON.parse(body);
             console.log(receivedData);
 
-            // Read the existing data from data.json
             fs.readFile('./Data/data.json', 'utf8', (err, data) => {
                 if (err && err.code !== 'ENOENT') {
-                    // If error is not file not found error, handle it
                     console.error('Error reading file:', err);
                     res.writeHead(500, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({error: 'Internal Server Error'}));
@@ -35,18 +33,16 @@ function handleSignup(req,res){
                     }
                 }
 
-                const found = jsonData.find((item) =>{
-                    return item.Email===receivedData.Email;
+                const found = jsonData.filter((item) =>{
+                    return item.Email!==receivedData.Email;
                 })
                 
-                if(found){
-                    console.log("Email already exists:", found);
-                    res.writeHead(409, { 'Content-Type': 'application/json' });
+                if(found===jsonData){
+                    console.log("Email does not exists", found);
+                    res.writeHead(404, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({error: 'Conflict'}));
                 } else{
-                    jsonData.push(receivedData);
-
-                    fs.writeFile('./Data/data.json', JSON.stringify(jsonData, null, 2), 'utf8', writeErr => {
+                    fs.writeFile('./Data/data.json', JSON.stringify(found, null, 2), 'utf8', writeErr => {
                         if (writeErr) {
                             console.error('Error writing file:', writeErr);
                             res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -61,4 +57,4 @@ function handleSignup(req,res){
         });
     }
 
-module.exports = handleSignup;
+module.exports = handleDelete;
