@@ -112,10 +112,11 @@ function Signup() {
     else if(checkEmail===false){
       setErrorMessage("Please Enter a valid Email")
     }
-    else{
+    else if(checkName && checkEmail && checkPass && checkcheckBox){
       let unpresent=true;
       try{
         const retrieved = await postData("http://127.0.0.1:8080/signup", userdata);
+        console.log(retrieved);
 
         if(retrieved.error==='Success'){
           unpresent=true;
@@ -129,7 +130,7 @@ function Signup() {
           setErrorMessage("Unknown error found")
         }
 
-        if(checkName && checkEmail && checkPass && checkcheckBox && unpresent){
+        if(unpresent){
           setmyName("");
           setmyEmail("");
           setmyPass("");

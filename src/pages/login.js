@@ -69,15 +69,13 @@ function Login(){
       else{
         try {
           const retrievedvalue = await getData("http://127.0.0.1:8080/login", userdata);
+          console.log(retrievedvalue);
 
           let matchdetails = true;
       
           if (retrievedvalue.error === 'User_not_found') {
             matchdetails = false;
             setErrorMessage("User not found");
-          } else if (retrievedvalue.error === 'Wrong Password') {
-            matchdetails = false;
-            setErrorMessage("Password is incorrect. Please Check!");
           }
       
           if (checkEmail && matchdetails){

@@ -1,4 +1,5 @@
 const fs = require('fs');
+const {client,addData} = require('../Data/mongdb');
 
 function handleSignup(req,res){
     let body = '';
@@ -6,58 +7,23 @@ function handleSignup(req,res){
             body += chunk.toString(); // convert Buffer to string
         });
 
-        req.on('end', () => {
+        req.on('end', async () => {
             const receivedData = JSON.parse(body);
             console.log(receivedData);
 
-            // Read the existing data from data.json
-            fs.readFile('./Data/data.json', 'utf8', (err, data) => {
-                if (err && err.code !== 'ENOENT') {
-                    // If error is not file not found error, handle it
-                    console.error('Error reading file:', err);
-                    res.writeHead(500, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({error: 'Internal Server Error'}));
-                    return;
-                }
-
-                let jsonData = [];
-                if (data) {
-                    try {
-                        jsonData = JSON.parse(data);
-                        if (!Array.isArray(jsonData)) {
-                            jsonData = [];
-                        }
-                    } catch (parseErr) {
-                        console.error('Error parsing JSON:', parseErr);
-                        res.writeHead(500, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({error: 'Internal Server Error'}));
-                        return;
-                    }
-                }
-
-                const found = jsonData.find((item) =>{
-                    return item.Email===receivedData.Email;
-                })
-                
-                if(found){
-                    console.log("Email already exists:", found);
+            try{
+                await addData(client,
+                    { _id: receivedData.Email, Email: receivedData.Email, Name: receivedData.Name, Pass: receivedData.Pass });
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({error: 'Success'}));
+            }catch(err){
+                if(err.code===11000){
+                    console.log("Email already exists");
                     res.writeHead(409, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({error: 'Conflict'}));
-                } else{
-                    jsonData.push(receivedData);
-
-                    fs.writeFile('./Data/data.json', JSON.stringify(jsonData, null, 2), 'utf8', writeErr => {
-                        if (writeErr) {
-                            console.error('Error writing file:', writeErr);
-                            res.writeHead(500, { 'Content-Type': 'application/json' });
-                            res.end(JSON.stringify({error: 'Internal Server Error'}));
-                            return;
-                        }
-                        res.writeHead(200, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({error: 'Success'}));
-                    });
                 }
-            });
+                else console.log("Error :" , err);
+            }
         });
     }
 

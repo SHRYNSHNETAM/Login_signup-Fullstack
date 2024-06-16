@@ -4,6 +4,7 @@ import { useLocation,useNavigate } from 'react-router-dom';
 function Home(){
     const navigate = useNavigate();
     const location = useLocation();
+    
     let { Name,Email,Pass } = location.state || {};
 
     if(!Name){
